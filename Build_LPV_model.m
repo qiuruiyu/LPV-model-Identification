@@ -1,4 +1,4 @@
-clear;clc;
+clear;clc;close all;
 
 Tsw = 35;
 N_1 = 500;
@@ -30,6 +30,10 @@ for i = 1:da_Num
     Y(i+1,1) = dnum(2)*U(i) - dden(2) * Y(i,1);
 end
 Y = Y(1:da_Num,1);
+
+% v = randn(da_Num, 1);
+% v = filter([sqrt(0.003)], [1, -0.9], v);
+% Y = Y + v;
 
 % THoe01 = oe([Y(2001:2500,1),U_1],[1,1,1]); 
 
@@ -72,15 +76,12 @@ legend('Alpha_1','Alpha_2','Alpha_3')
 figure(2);
 Nsim = 150;
 
-v = randn(150, 1);
-v = filter([0.003], [1, -0.9], v);
-
 True_STP = Get_stepresponse(1.5,Nsim);
 work_1 = Get_stepresponse(1,Nsim);
 work_2 = Get_stepresponse(2.25,Nsim);
 work_3 = Get_stepresponse(4,Nsim);
 [w_x_1l,w_x_2l,w_x_3l] = Trivial_Interpolation(1.5);
-Tri_STP = w_x_1l*work_1 + w_x_2l*work_2 + w_x_3l*work_3 + v;
-LPV_STP = alpha_1(51,1)*work_1 + alpha_2(51,1)*work_2 + alpha_3(51,1)*work_3 + v;
+Tri_STP = w_x_1l*work_1 + w_x_2l*work_2 + w_x_3l*work_3;
+LPV_STP = alpha_1(51,1)*work_1 + alpha_2(51,1)*work_2 + alpha_3(51,1)*work_3;
 plot(0:Nsim,[0;True_STP],'-b',0:Nsim,[0;Tri_STP],'--k',0:Nsim,[0;LPV_STP],'-.r');
-legend('Ture','Linear','LPV')
+legend('True','Linear','LPV')
