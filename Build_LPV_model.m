@@ -1,23 +1,23 @@
 clear;clc;close all;
 
 Tsw = 35;
-N_1 = 500;
+N_1 = 5000;
 U_1 = gbngen(N_1,Tsw);
 w_1 = ones(N_1,1);
 
-N_2 = 1500;
+N_2 = 15000;
 U_2 = gbngen(N_2,Tsw);
 w_2 = linspace(1,2.25,N_2)';
 
-N_3 = 500;
+N_3 = 5000;
 U_3 = gbngen(N_3,Tsw);
 w_3 = 2.25*ones(N_1,1);
 
-N_4 = 1500;
+N_4 = 15000;
 U_4 = gbngen(N_4,Tsw);
 w_4 = linspace(2.25,4,N_4)';
 
-N_5 = 500;
+N_5 = 5000;
 U_5 = gbngen(N_5,Tsw);
 w_5 = 4*ones(N_5,1);
 
@@ -25,6 +25,7 @@ da_Num = N_1+N_2+N_3+N_4+N_5;
 U = [U_1;U_2;U_3;U_4;U_5];
 W = [w_1;w_2;w_3;w_4;w_5];
 Y = zeros(da_Num,1);
+% calculate system output for a input u 
 for i = 1:da_Num
     [dnum,dden] = Get_dnumden(W(i));
     Y(i+1,1) = dnum(2)*U(i) - dden(2) * Y(i,1);
@@ -36,7 +37,10 @@ Y = Y(1:da_Num,1);
 % Y = Y + v;
 
 % THoe01 = oe([Y(2001:2500,1),U_1],[1,1,1]); 
-
+%% save data 
+save('./data/u.mat', 'U');
+save('./data/w.mat', 'W');
+save('./data/y.mat', 'Y');
 %% model Identification
 phi_1 = [];
 phi_2 = [];
@@ -72,7 +76,7 @@ figure(1);
 plot(w_step,alpha_1,'-b',w_step,alpha_2,'--k',w_step,alpha_3,'-.r');
 legend('Alpha_1','Alpha_2','Alpha_3')
 
-
+Ynn = load("nn.mat").y';
 figure(2);
 Nsim = 150;
 
@@ -83,5 +87,14 @@ work_3 = Get_stepresponse(4,Nsim);
 [w_x_1l,w_x_2l,w_x_3l] = Trivial_Interpolation(1.5);
 Tri_STP = w_x_1l*work_1 + w_x_2l*work_2 + w_x_3l*work_3;
 LPV_STP = alpha_1(51,1)*work_1 + alpha_2(51,1)*work_2 + alpha_3(51,1)*work_3;
-plot(0:Nsim,[0;True_STP],'-b',0:Nsim,[0;Tri_STP],'--k',0:Nsim,[0;LPV_STP],'-.r');
-legend('True','Linear','LPV')
+plot(0:Nsim,[0;True_STP],'-b',0:Nsim,[0;Tri_STP],'--k',0:Nsim,[0;LPV_STP],'-.r', 0:Nsim, Ynn, '-*g');
+legend('True','Linear','LPV', 'LSTM')
+
+figure(3) 
+error_Tri_STP = sum((True_STP - Tri_STP).^2, 'all');
+error_LPV = sum((True_STP - LPV_STP).^2, 'all');
+error_LSTM = sum(((True_STP - Ynn(2:end)).^2), 'all');
+e = [error_Tri_STP, error_LPV, error_LSTM];
+bar(e);
+set(gca, 'XTickLabel', {'Trivial', 'LPV', 'LSTM'});
+text(1:length(e), e, num2str(e'), 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom');
