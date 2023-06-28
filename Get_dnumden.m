@@ -1,6 +1,6 @@
 function [dnum,dden] = Get_dnumden(w)
-    K = 0.6+w^2;
-    T = 3+0.5*w^3;
+    K = 0.6+w^3;
+    T = 3+0.5*w^4;
     cnum = K; 
     cden = [T,1];
     Ts = 1;

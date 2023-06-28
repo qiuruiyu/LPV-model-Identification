@@ -1,46 +1,102 @@
 clear;clc;close all;
 
-Tsw = 35;
-N_1 = 5000;
-U_1 = gbngen(N_1,Tsw);
-w_1 = ones(N_1,1);
+Tsw = 2;
+N = [1000, 1000, 1000, 1000, 1000];
+ws = [1, 2.25, 4];
 
-N_2 = 15000;
-U_2 = gbngen(N_2,Tsw);
-w_2 = linspace(1,2.25,N_2)';
-
-N_3 = 5000;
-U_3 = gbngen(N_3,Tsw);
-w_3 = 2.25*ones(N_1,1);
-
-N_4 = 15000;
-U_4 = gbngen(N_4,Tsw);
-w_4 = linspace(2.25,4,N_4)';
-
-N_5 = 5000;
-U_5 = gbngen(N_5,Tsw);
-w_5 = 4*ones(N_5,1);
-
-da_Num = N_1+N_2+N_3+N_4+N_5;
-U = [U_1;U_2;U_3;U_4;U_5];
-W = [w_1;w_2;w_3;w_4;w_5];
-Y = zeros(da_Num,1);
-% calculate system output for a input u 
-for i = 1:da_Num
-    [dnum,dden] = Get_dnumden(W(i));
-    Y(i+1,1) = dnum(2)*U(i) - dden(2) * Y(i,1);
+U1 = gbngen(N(1), Tsw);
+w1 = ws(1) * ones(N(1), 1);
+Y1 = zeros(N(1), 1);
+for i = 1:N(1)
+    [dnum,dden] = Get_dnumden(w1(i));
+    Y1(i+1,1) = dnum(2)*U1(i) - dden(2) * Y1(i, 1);
 end
-Y = Y(1:da_Num,1);
 
-% v = randn(da_Num, 1);
-% v = filter([sqrt(0.003)], [1, -0.9], v);
+U2 = gbngen(N(2), Tsw);
+w2 = linspace(ws(1), ws(2), N(2))';
+Y2 = zeros(N(2), 1);
+% Y2(1, 1) = Y1(end, 1);
+Y2(1, 1) = 0;
+for i = 1:N(2)
+    [dnum,dden] = Get_dnumden(w2(i));
+    Y2(i+1, 1) = dnum(2)*U2(i) - dden(2) * Y2(i,1);
+end
+
+U3 = gbngen(N(3), Tsw);
+w3 = ws(2)*ones(N(3), 1);
+Y3 = zeros(N(3), 1);
+% Y3(1, 1) = Y2(end, 1);
+for i = 1:N(3)
+    [dnum,dden] = Get_dnumden(w3(i));
+    Y3(i+1, 1) = dnum(2)*U3(i) - dden(2) * Y3(i,1);
+end
+
+U4 = gbngen(N(4), Tsw);
+w4 = linspace(ws(2), ws(3), N(4))';
+Y4 = zeros(N(4), 1);
+Y4(1, 1) = Y3(end, 1);
+for i = 1:N(4)
+    [dnum,dden] = Get_dnumden(w4(i));
+    Y4(i+1, 1) = dnum(2)*U4(i) - dden(2) * Y4(i,1);
+end
+
+U5 = gbngen(N(5), Tsw);
+w5 = ws(3) * ones(N(5), 1);
+Y5 = zeros(N(5), 1);
+Y5(1, 1) = Y4(end, 1);
+for i = 1:N(5)
+    [dnum,dden] = Get_dnumden(w5(i));
+    Y5(i+1, 1) = dnum(2)*U5(i) - dden(2) * Y5(i,1);
+end
+
+% process Y
+Y1 = Y1(1:N(1), 1);
+Y2 = Y2(1:N(2), 1);
+Y3 = Y3(1:N(3), 1);
+Y4 = Y4(1:N(4), 1);
+Y5 = Y5(1:N(5), 1);
+% add noise 
+% ratio = 0.03;
+% Y_1 = Add_noise(Y_1, ratio);
+% Y_2 = Add_noise(Y_2, ratio);
+% Y_3 = Add_noise(Y_3, ratio);
+% Y_4 = Add_noise(Y_4, ratio);
+% Y_5 = Add_noise(Y_5, ratio);
+
+
+da_Num = sum(N);
+U = [U1;U2;U3;U4;U5];
+W = [w1;w2;w3;w4;w5];
+Y = [Y1;Y2;Y3;Y4;Y5];
+% Y = zeros(da_Num, 1);
+% calculate system output for a input u 
+% for i = 1:da_Num
+%     [dnum,dden] = Get_dnumden(W(i));
+%     Y(i+1,1) = dnum(2)*U(i) - dden(2) * Y(i,1);
+% end
+% Y = Y(1:da_Num,1);
+
+% PY = var(Y);
+% n = randn(da_Num, 1);
+% v = filter([1], [1, -0.9], n);
+% Pv = var(v);
+% Pn_desired = 0.03 * PY;
+% v = v * sqrt(Pn_desired/Pv);
+% SNR = 10 * log10(PY/Pn_desired);
 % Y = Y + v;
 
 % THoe01 = oe([Y(2001:2500,1),U_1],[1,1,1]); 
 %% save data 
-save('./data/u.mat', 'U');
-save('./data/w.mat', 'W');
-save('./data/y.mat', 'Y');
+save('../FitModel/data/u.mat', 'U');
+save('../FitModel/data/w.mat', 'W');
+save('../FitModel/data/y.mat', 'Y');
+
+%% load data 
+clear;clc;close all;
+U = load('../FitModel/data/u.mat').U;
+W = load('../FitModel/data/w.mat').W;
+Y = load('../FitModel/data/Y.mat').Y;
+[da_Num, ~] = size(Y);
 %% model Identification
 phi_1 = [];
 phi_2 = [];
@@ -51,7 +107,6 @@ for i = 1:da_Num
 end
 phi_2 = phi_1;
 phi_3 = phi_1;
-Total_data = 4500;
 
 y1_hat =  Get_yhat(1,U);
 y2_hat =  Get_yhat(2.25,U);
@@ -76,17 +131,20 @@ figure(1);
 plot(w_step,alpha_1,'-b',w_step,alpha_2,'--k',w_step,alpha_3,'-.r');
 legend('Alpha_1','Alpha_2','Alpha_3')
 
-Ynn = load("nn.mat").y';
+Ynn = load("./data/nn.mat").y';
 figure(2);
 Nsim = 150;
 
-True_STP = Get_stepresponse(1.5,Nsim);
+work_pt = 1.5;
+idx = find(w_step == work_pt);
+
+True_STP = Get_stepresponse(work_pt,Nsim);
 work_1 = Get_stepresponse(1,Nsim);
 work_2 = Get_stepresponse(2.25,Nsim);
 work_3 = Get_stepresponse(4,Nsim);
-[w_x_1l,w_x_2l,w_x_3l] = Trivial_Interpolation(1.5);
+[w_x_1l,w_x_2l,w_x_3l] = Trivial_Interpolation(work_pt);
 Tri_STP = w_x_1l*work_1 + w_x_2l*work_2 + w_x_3l*work_3;
-LPV_STP = alpha_1(51,1)*work_1 + alpha_2(51,1)*work_2 + alpha_3(51,1)*work_3;
+LPV_STP = alpha_1(idx,1)*work_1 + alpha_2(idx,1)*work_2 + alpha_3(idx,1)*work_3;
 plot(0:Nsim,[0;True_STP],'-b',0:Nsim,[0;Tri_STP],'--k',0:Nsim,[0;LPV_STP],'-.r', 0:Nsim, Ynn, '-*g');
 legend('True','Linear','LPV', 'LSTM')
 
