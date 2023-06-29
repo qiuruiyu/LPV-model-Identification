@@ -1,7 +1,7 @@
 clear;clc;close all;
 
 Tsw = 2;
-N = 10 * [100, 100, 100, 100, 100];
+N = 10 * [5000, 1, 10, 10, 10];
 ws = [1, 2.25, 4];
 
 U1 = gbngen(N(1), Tsw);
@@ -86,9 +86,9 @@ Y = [Y1;Y2;Y3;Y4;Y5];
 
 % THoe01 = oe([Y(2001:2500,1),U_1],[1,1,1]); 
 %% save data 
-save('../FitModel/data/u.mat', 'U');
-save('../FitModel/data/w.mat', 'W');
-save('../FitModel/data/y.mat', 'Y');
+save('../FitModel/data/u.mat', 'U1');
+save('../FitModel/data/w.mat', 'w1');
+save('../FitModel/data/y.mat', 'Y1');
 
 %% load data 
 clear;clc;close all;
@@ -134,7 +134,7 @@ Ynn = load("./data/nn.mat").y';
 figure(2);
 Nsim = 150;
 
-work_pt = 1.8;
+work_pt = 1.5;
 idx = find(w_step == work_pt);
 
 True_STP = Get_stepresponse(work_pt,Nsim);
