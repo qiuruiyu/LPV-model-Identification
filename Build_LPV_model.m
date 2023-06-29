@@ -1,7 +1,7 @@
 clear;clc;close all;
 
 Tsw = 2;
-N = [1000, 1000, 1000, 1000, 1000];
+N = 10 * [100, 100, 100, 100, 100];
 ws = [1, 2.25, 4];
 
 U1 = gbngen(N(1), Tsw);
@@ -15,8 +15,7 @@ end
 U2 = gbngen(N(2), Tsw);
 w2 = linspace(ws(1), ws(2), N(2))';
 Y2 = zeros(N(2), 1);
-% Y2(1, 1) = Y1(end, 1);
-Y2(1, 1) = 0;
+Y2(1, 1) = Y1(end, 1);
 for i = 1:N(2)
     [dnum,dden] = Get_dnumden(w2(i));
     Y2(i+1, 1) = dnum(2)*U2(i) - dden(2) * Y2(i,1);
@@ -25,7 +24,7 @@ end
 U3 = gbngen(N(3), Tsw);
 w3 = ws(2)*ones(N(3), 1);
 Y3 = zeros(N(3), 1);
-% Y3(1, 1) = Y2(end, 1);
+Y3(1, 1) = Y2(end, 1);
 for i = 1:N(3)
     [dnum,dden] = Get_dnumden(w3(i));
     Y3(i+1, 1) = dnum(2)*U3(i) - dden(2) * Y3(i,1);
@@ -135,7 +134,7 @@ Ynn = load("./data/nn.mat").y';
 figure(2);
 Nsim = 150;
 
-work_pt = 1.5;
+work_pt = 1.8;
 idx = find(w_step == work_pt);
 
 True_STP = Get_stepresponse(work_pt,Nsim);
